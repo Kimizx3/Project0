@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
@@ -25,7 +26,7 @@ public class Timer : MonoBehaviour
     private float _currentTime = 5400;
     private float _workTime = 0;
     private float _breakTime = 300;
-    private bool _playTimer;
+    private bool _timerStarted;
     private bool _timerStopped;
     private const float AMinute = 60f;
     
@@ -36,6 +37,7 @@ public class Timer : MonoBehaviour
     /// public void PlayTimer();
     /// public void StopTimer();
     /// public void ResetTimer();
+    /// public void ToggleTimerButton();
  
     /// private void DisplayTimer();
     /// private void DisplayTimeSetter();
@@ -47,11 +49,24 @@ public class Timer : MonoBehaviour
     /// private void PlusMinutesBreakTime();
     /// private void MinusMinutesWorkTime();
     /// private void MinusMinutesBreakTime();
-    
+    private void OnEnable()
+    {
+        UIManager.OnStartClicked += PlayTimer;
+        UIManager.OnStopClicked += StopTimer;
+        UIManager.OnResetClicked += ResetTimer;
+    }
+
+    private void OnDisable()
+    {
+        UIManager.OnStartClicked -= PlayTimer;
+        UIManager.OnStopClicked -= StopTimer;
+        UIManager.OnResetClicked -= ResetTimer;
+    }
+
     private void Start()
     {
-        _playTimer = false;
-        _timerStopped = false;
+        _timerStarted = false;
+        _timerStopped = true;
         
         ResetTimer();
         _workTime = _currentTime;
@@ -63,13 +78,13 @@ public class Timer : MonoBehaviour
 
     private void Update()
     {
-        if (_playTimer)
+        if (_timerStarted)
         {
             _workTime -= Time.deltaTime;
             if (_workTime <= 0)
             {
                 Debug.Log("Timer ended!");
-                _playTimer = false;
+                _timerStarted = false;
             }
             DisplayTimer(_workTime);
         }
@@ -84,13 +99,13 @@ public class Timer : MonoBehaviour
 
     public void PlayTimer()
     {
-        _playTimer = true;
+        _timerStarted = true;
         _timerStopped = false;
     }
 
     public void StopTimer()
     {
-        _playTimer = false;
+        _timerStarted = false;
         _timerStopped = true;
     }
     
@@ -102,7 +117,7 @@ public class Timer : MonoBehaviour
         DisplayTimer(_workTime);
         DisplayTimeSetter();
         DisplayBreakTimeSetter();
-        _playTimer = false;
+        _timerStarted = false;
     }
     
     
@@ -147,7 +162,7 @@ public class Timer : MonoBehaviour
 
     public void PlusMinutesWorkTime()
     {
-        if (!_playTimer)
+        if (!_timerStarted)
         {
             _currentTime += AMinute;
             _workTime = _currentTime;
@@ -157,7 +172,7 @@ public class Timer : MonoBehaviour
 
     public void MinusMinutesWorkTime()
     {
-        if (!_playTimer)
+        if (!_timerStarted)
         {
             _currentTime -= AMinute;
             _workTime = _currentTime;
@@ -167,7 +182,7 @@ public class Timer : MonoBehaviour
     
     public void PlusMinutesBreakTime()
     {
-        if (!_playTimer)
+        if (!_timerStarted)
         {
             _breakTime += AMinute;
         }
@@ -176,7 +191,7 @@ public class Timer : MonoBehaviour
 
     public void MinusMinutesBreakTime()
     {
-        if (_playTimer)
+        if (_timerStarted)
         {
             _breakTime -= AMinute;
         }
